@@ -1,0 +1,35 @@
+name: pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      # The project page lives in the portfolio repo; build it from there.
+      - uses: actions/checkout@v5
+        with:
+          repository: canmenzo/canmenzo.github.io
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/build-project-sites.mjs
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-projects/numbers
+      - id: deploy
+        uses: actions/deploy-pages@v4
